@@ -35,7 +35,9 @@ Keep in mind this flag requires a name, otherwise you won't be able to get back 
 
 ### Uh oh! I've forgotten what I named my sandbox!
 Don't fear my friend, we've got you covered! To list all **semi-permanent** sandboxes, just use the list flag!
+
 `sandbox -l`
+
 If it's a **permanent** sandbox you're after, simply add the permanent flag!
 `sandbox -p -l` or `sandbox -pl`
 
