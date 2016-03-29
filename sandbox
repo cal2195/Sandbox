@@ -9,6 +9,7 @@ usage()
   echo "    -p          permanent sandbox"
   echo "    -m          in-memory sandbox"
   echo "    -h          show this help text"
+  echo "    COMMAND     command to run instead of shell"
   echo ""
   echo "See https://github.com/cal2195/Sandbox for more information!"
 }
@@ -63,6 +64,7 @@ while getopts ":n:hdlpm" opt; do
       ;;
   esac
 done
+shift $(($OPTIND - 1))
 
 #Delete if required
 if [ "$DELETENOW" == true ]; then
@@ -126,7 +128,11 @@ else
   sudo grep -q -F "DISPLAY=${DISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${DISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
   #And we're away! :D
-  sudo chroot $tmprt su - $USER
+  if [ "$#" -eq  "0" ]; then
+    sudo chroot $tmprt su - $USER
+  else
+    sudo chroot $tmprt su - $USER -c "$@"
+  fi
   #Clean up after exit
   if [ "$REMOVEAFTER" == true ]; then
     sudo rm -r $tmprw

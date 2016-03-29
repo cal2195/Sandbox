@@ -47,6 +47,15 @@ If it's a **permanent** sandbox you're after, simply add the permanent flag!
 ### Is it only the terminal that's sandboxed?
 Anything that's done from within that terminal is also sandboxed! So if you run `firefox` from within a sandbox, it will also be part of the sandbox! You can also run your file manager or text editor to view the files within the sandbox!
 
+### Am I able to sandbox an application without using the shell?
+Yes you can! Just add the command for the application after the flags!
+
+`sandbox -pn webdev firefox` - Will immediately run **firefox** in a sandbox called *webdev*!
+
+If you need to **pass in parameters**, make sure you enclose them in quotes!
+
+`sandbox -pn stay "mousepad /home/cal/Sandbox/README.md"`
+
 ### Is it speed or security you're after?
 Sandbox also supports **RAM Disks**, which being backed by your RAM has some interesting pros!
 #### Pros
@@ -88,6 +97,7 @@ Usage: ./sandbox [OPTIONS]... [COMMAND]
     -p          permanent sandbox
     -m          in-memory sandbox
     -h          show this help text
+    COMMAND     command to run instead of shell
 
 See https://github.com/cal2195/Sandbox for more information!
 ```
