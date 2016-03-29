@@ -103,14 +103,16 @@ else
   #Determine sandbox type
   if [ "$NAME" == "" ]; then
     if [ "$RAMDISK" == true ]; then
-      tmprw=`mktemp -dp $ROOTDIR`
-      tmprt=`mktemp -dp $ROOTDIR`
+      tmprw="$ROOTDIR/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rw"
+      tmprt="$ROOTDIR/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rt"
       NAME="rambox"
     else
-      tmprw=`mktemp -d`
-      tmprt=`mktemp -d`
+      tmprw="/tmp/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rw"
+      tmprt="/tmp/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rt"
       NAME="tmpbox"
     fi
+    mkdir -p $tmprw
+    mkdir -p $tmprt
   else
     mkdir -p $ROOTDIR/$NAME/rw
     mkdir -p $ROOTDIR/$NAME/rt
@@ -118,7 +120,7 @@ else
     tmprt="$ROOTDIR/$NAME/rt"
   fi
   #Mount unionfs
-  sudo $UNION -o allow_other,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:/=ro $tmprt
+  sudo $UNION -o allow_other,default_permissions,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:/=ro $tmprt
   #Mount system folders
   sudo mount -t proc proc $tmprt/proc
   sudo mount -t sysfs sys $tmprt/sys
@@ -134,7 +136,7 @@ else
   if [ "$GRAINS" != "" ]; then
     sudo chroot $tmprt apt-get update
     sudo chroot $tmprt apt-get install curl
-    sudo chroot $tmprt curl url | /bin/bash
+    sudo chroot $tmprt curl -L "https://github.com/cal2195/Sandbox/raw/master/sandgrains/$GRAINS.grain" | sudo chroot $tmprt /bin/bash
   fi
   #And we're away! :D
   if [ "$#" -eq  "0" ]; then
