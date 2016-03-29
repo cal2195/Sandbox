@@ -9,7 +9,7 @@ DELETENOW=false
 LISTBOXES=false
 ROOTDIR="/tmp/sandbox"
 
-while getopts ":n:hdl" opt; do
+while getopts ":n:hdlp" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -17,6 +17,9 @@ while getopts ":n:hdl" opt; do
       ;;
     d)
       DELETENOW=true
+      ;;
+    p)
+      ROOTDIR="$HOME/.sandbox"
       ;;
     l)
       LISTBOXES=true
