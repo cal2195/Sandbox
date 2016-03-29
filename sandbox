@@ -1,5 +1,9 @@
 #!/bin/bash
-PSSAND="\"\[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@\h\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
+PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@\h\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
+UNION="unionfs"
+if [ "$(lsb_release -si)" == "Ubuntu" ]; then
+  UNION="unionfs-fuse"
+fi
 
 if [ "$1" == "install" ]; then
   echo "Installing..."
@@ -10,12 +14,14 @@ if [ "$1" == "install" ]; then
 else
   tmprw=/tmp/rw #`mktemp -d`
   tmprt=/tmp/rt #`mktemp -d`
-  sudo unionfs -o allow_other,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:/=ro $tmprt
+  sudo $UNION -o allow_other,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:/=ro $tmprt
   sudo mount -t proc proc $tmprt/proc
   sudo mount -t sysfs sys $tmprt/sys
   sudo mount --rbind /dev $tmprt/dev
   sudo mount --rbind /run $tmprt/run
   sudo grep -q -F "DISPLAY=${DISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${DISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/etc/environment || echo "PS1=$PSSAND" | sudo tee --append $tmprt/etc/environment > /dev/null
-  sudo chroot $tmprt env DISPLAY=:0 su - $USER
+  sudo grep -q -F "DISPLAY=${DISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${DISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
+  sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
+  sudo chroot $tmprt su - $USER
 fi
