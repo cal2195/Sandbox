@@ -7,9 +7,10 @@ fi
 REMOVEAFTER=true
 DELETENOW=false
 LISTBOXES=false
+RAMDISK=false
 ROOTDIR="/tmp/sandbox"
 
-while getopts ":n:hdlp" opt; do
+while getopts ":n:hdlpm" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -20,6 +21,10 @@ while getopts ":n:hdlp" opt; do
       ;;
     p)
       ROOTDIR="$HOME/.sandbox"
+      ;;
+    m)
+      RAMDISK=true
+      echo "Warning - using ram disk. Make sure you know what you're doing!"
       ;;
     l)
       LISTBOXES=true
@@ -48,6 +53,12 @@ if [ "$LISTBOXES" == true ]; then
   exit
 fi
 
+if [ "$RAMDISK" == true ]; then
+  mkdir -p /tmp/ram/sandbox
+  sudo mount -t tmpfs tmpfs /tmp/ram/sandbox
+  ROOTDIR="/tmp/ram/sandbox"
+fi
+
 if [ "$1" == "install" ]; then
   echo "Installing..."
   sudo apt-get update
@@ -56,9 +67,15 @@ if [ "$1" == "install" ]; then
   echo "Installed!"
 else
   if [ "$NAME" == "" ]; then
-    tmprw=`mktemp -d`
-    tmprt=`mktemp -d`
-    NAME="tmpbox"
+    if [ "$RAMDISK" == true ]; then
+      tmprw=`mktemp -dp $ROOTDIR`
+      tmprt=`mktemp -dp $ROOTDIR`
+      NAME="rambox"
+    else
+      tmprw=`mktemp -d`
+      tmprt=`mktemp -d`
+      NAME="tmpbox"
+    fi
   else
     mkdir -p $ROOTDIR/$NAME/rw
     mkdir -p $ROOTDIR/$NAME/rt
