@@ -4,11 +4,22 @@ UNION="unionfs"
 if [ "$(lsb_release -si)" == "Ubuntu" ]; then
   UNION="unionfs-fuse"
 fi
+REMOVEAFTER=true
+DELETENOW=false
+LISTBOXES=false
+ROOTDIR="/tmp/sandbox"
 
-while getopts ":n:h" opt; do
+while getopts ":n:hdl" opt; do
   case $opt in
     n)
       NAME=$OPTARG
+      REMOVEAFTER=false
+      ;;
+    d)
+      DELETENOW=true
+      ;;
+    l)
+      LISTBOXES=true
       ;;
     \?)
       echo "Invalid flag: -$OPTARG" >&2
@@ -22,6 +33,18 @@ while getopts ":n:h" opt; do
   esac
 done
 
+if [ "$DELETENOW" == true ]; then
+  sudo rm -r $ROOTDIR/$NAME/rw
+  echo "Sandbox deleted!"
+  exit
+fi
+
+if [ "$LISTBOXES" == true ]; then
+  echo "Sandboxes:"
+  ls $ROOTDIR
+  exit
+fi
+
 if [ "$1" == "install" ]; then
   echo "Installing..."
   sudo apt-get update
@@ -34,10 +57,10 @@ else
     tmprt=`mktemp -d`
     NAME="tmpbox"
   else
-    mkdir -p /tmp/$NAME/rw
-    mkdir -p /tmp/$NAME/rt
-    tmprw="/tmp/$NAME/rw"
-    tmprt="/tmp/$NAME/rt"
+    mkdir -p $ROOTDIR/$NAME/rw
+    mkdir -p $ROOTDIR/$NAME/rt
+    tmprw="$ROOTDIR/$NAME/rw"
+    tmprt="$ROOTDIR/$NAME/rt"
   fi
   sudo $UNION -o allow_other,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:/=ro $tmprt
   sudo mount -t proc proc $tmprt/proc
@@ -50,4 +73,10 @@ else
   sudo grep -q -F "DISPLAY=${DISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${DISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
   sudo chroot $tmprt su - $USER
+  if [ "$REMOVEAFTER" == true ]; then
+    sudo rm -r $tmprw
+    echo "Sandbox deleted!"
+  else
+    echo "Sandbox not deleted - reattach using the name: $NAME"
+  fi
 fi
