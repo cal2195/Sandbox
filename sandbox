@@ -1,6 +1,19 @@
 #!/bin/bash
+
+usage()
+{
+  echo "Usage: $0 [OPTIONS]... [COMMAND]"
+  echo "    -n NAME     name the sandbox"
+  echo "    -d          delete the named sandbox"
+  echo "    -l          list all sandboxes"
+  echo "    -p          permanent sandbox"
+  echo "    -m          in-memory sandbox"
+  echo "    -h          show this help text"
+  echo ""
+  echo "See https://github.com/cal2195/Sandbox for more information!"
+}
+
 #Default values
-USAGE="Usage: $0"
 REMOVEAFTER=true
 DELETENOW=false
 LISTBOXES=false
@@ -41,11 +54,11 @@ while getopts ":n:hdlpm" opt; do
       ;;
     \?)
       echo "Invalid flag: -$OPTARG" >&2
-      echo $USAGE
+      usage
       exit
       ;;
     h)
-      echo $USAGE
+      usage
       exit
       ;;
   esac
