@@ -134,7 +134,9 @@ else
   sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
   #Initialise with any sand grains
   if [ "$GRAINS" != "" ]; then
-    sudo chroot $tmprt apt-get update
+    if [[ $(( $(date +%s) - $(stat -c %Z $tmprt/var/cache/apt/pkgcache.bin) )) -gt $(( 24 * 60 * 60 )) ]]; then
+      sudo chroot $tmprt apt-get update
+    fi
     sudo chroot $tmprt apt-get install curl
     sudo chroot $tmprt curl -L "https://github.com/cal2195/Sandbox/raw/master/sandgrains/$GRAINS.grain" | sudo chroot $tmprt /bin/bash
   fi
