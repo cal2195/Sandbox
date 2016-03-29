@@ -18,6 +18,8 @@ There are quite a few **different types of sandboxes** available, so whether you
 ### How do I install it?
 Simply run `./sandbox install` - The install command will install all needed dependencies, and also add the executable to your path.
 
+Alternatively, you can install `unionfs-fuse` yourself and use `./sandbox` as a portable application!
+
 ### Okay, now what?
 Once installed, you can create a sandbox from anywhere by typing `sandbox` in a terminal. This will create a **temporary** sandbox, that will be destroyed once you exit it. *See **Types of Sandboxes** below!*
 
