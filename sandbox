@@ -1,14 +1,21 @@
 #!/bin/bash
 USAGE="Usage: $0"
-UNION="unionfs"
-if [ "$(lsb_release -si)" == "Ubuntu" ]; then
-  UNION="unionfs-fuse"
-fi
 REMOVEAFTER=true
 DELETENOW=false
 LISTBOXES=false
 RAMDISK=false
+NEEDSDEPS=false
 ROOTDIR="/tmp/sandbox"
+
+if command -v unionfs >/dev/null 2>&1; then
+  if command -v unionfs-fuse >/dev/null 2>&1; then
+    NEEDSDEPS=true
+  else
+    UNION="unionfs-fuse"
+  fi
+else
+  UNION="unionfs"
+fi
 
 while getopts ":n:hdlpm" opt; do
   case $opt in
@@ -61,8 +68,10 @@ fi
 
 if [ "$1" == "install" ]; then
   echo "Installing..."
-  sudo apt-get update
-  sudo apt-get install unionfs-fuse
+  if [ "$NEEDSDEPS" == true ]; then
+    sudo apt-get update
+    sudo apt-get install unionfs-fuse
+  fi
   sudo cp $0 /usr/local/bin/$0
   echo "Installed!"
 else
