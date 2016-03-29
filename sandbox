@@ -1,9 +1,26 @@
 #!/bin/bash
-PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@\h\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
+USAGE="Usage: $0"
 UNION="unionfs"
 if [ "$(lsb_release -si)" == "Ubuntu" ]; then
   UNION="unionfs-fuse"
 fi
+
+while getopts ":n:h" opt; do
+  case $opt in
+    n)
+      NAME=$OPTARG
+      ;;
+    \?)
+      echo "Invalid flag: -$OPTARG" >&2
+      echo $USAGE
+      exit
+      ;;
+    h)
+      echo $USAGE
+      exit
+      ;;
+  esac
+done
 
 if [ "$1" == "install" ]; then
   echo "Installing..."
@@ -12,13 +29,22 @@ if [ "$1" == "install" ]; then
   sudo cp $0 /usr/local/bin/$0
   echo "Installed!"
 else
-  tmprw=/tmp/rw #`mktemp -d`
-  tmprt=/tmp/rt #`mktemp -d`
+  if [ "$NAME" == "" ]; then
+    tmprw=`mktemp -d`
+    tmprt=`mktemp -d`
+    NAME="tmpbox"
+  else
+    mkdir -p /tmp/$NAME/rw
+    mkdir -p /tmp/$NAME/rt
+    tmprw="/tmp/$NAME/rw"
+    tmprt="/tmp/$NAME/rt"
+  fi
   sudo $UNION -o allow_other,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:/=ro $tmprt
   sudo mount -t proc proc $tmprt/proc
   sudo mount -t sysfs sys $tmprt/sys
   sudo mount --rbind /dev $tmprt/dev
   sudo mount --rbind /run $tmprt/run
+  PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
   sudo grep -q -F "DISPLAY=${DISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${DISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/etc/environment || echo "PS1=$PSSAND" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "DISPLAY=${DISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${DISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
