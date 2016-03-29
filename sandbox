@@ -1,4 +1,5 @@
 #!/bin/bash
+#Default values
 USAGE="Usage: $0"
 REMOVEAFTER=true
 DELETENOW=false
@@ -7,16 +8,18 @@ RAMDISK=false
 NEEDSDEPS=false
 ROOTDIR="/tmp/sandbox"
 
+#Check for unionfs-fuse
 if command -v unionfs >/dev/null 2>&1; then
-  if command -v unionfs-fuse >/dev/null 2>&1; then
-    NEEDSDEPS=true
-  else
-    UNION="unionfs-fuse"
-  fi
-else
   UNION="unionfs"
+else
+  if command -v unionfs-fuse >/dev/null 2>&1; then
+    UNION="unionfs-fuse"
+  else
+    NEEDSDEPS=true
+  fi
 fi
 
+#Parse commands
 while getopts ":n:hdlpm" opt; do
   case $opt in
     n)
@@ -48,24 +51,28 @@ while getopts ":n:hdlpm" opt; do
   esac
 done
 
+#Delete if required
 if [ "$DELETENOW" == true ]; then
   sudo rm -r $ROOTDIR/$NAME/rw
   echo "Sandbox deleted!"
   exit
 fi
 
+#List sandboxes
 if [ "$LISTBOXES" == true ]; then
   echo "Sandboxes:"
   ls $ROOTDIR
   exit
 fi
 
+#Mount and Use Ram Disk
 if [ "$RAMDISK" == true ]; then
   mkdir -p /tmp/ram/sandbox
   sudo mount -t tmpfs tmpfs /tmp/ram/sandbox
   ROOTDIR="/tmp/ram/sandbox"
 fi
 
+#Install dependencies & sandbox
 if [ "$1" == "install" ]; then
   echo "Installing..."
   if [ "$NEEDSDEPS" == true ]; then
@@ -75,6 +82,7 @@ if [ "$1" == "install" ]; then
   sudo cp $0 /usr/local/bin/$0
   echo "Installed!"
 else
+  #Determine sandbox type
   if [ "$NAME" == "" ]; then
     if [ "$RAMDISK" == true ]; then
       tmprw=`mktemp -dp $ROOTDIR`
@@ -91,17 +99,22 @@ else
     tmprw="$ROOTDIR/$NAME/rw"
     tmprt="$ROOTDIR/$NAME/rt"
   fi
+  #Mount unionfs
   sudo $UNION -o allow_other,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:/=ro $tmprt
+  #Mount system folders
   sudo mount -t proc proc $tmprt/proc
   sudo mount -t sysfs sys $tmprt/sys
   sudo mount --rbind /dev $tmprt/dev
   sudo mount --rbind /run $tmprt/run
+  #Change PS1 prompt & set DISPLAY
   PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
   sudo grep -q -F "DISPLAY=${DISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${DISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/etc/environment || echo "PS1=$PSSAND" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "DISPLAY=${DISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${DISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
+  #And we're away! :D
   sudo chroot $tmprt su - $USER
+  #Clean up after exit
   if [ "$REMOVEAFTER" == true ]; then
     sudo rm -r $tmprw
     echo "Sandbox deleted!"
