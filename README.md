@@ -11,6 +11,8 @@ Sandbox is a little shell script that mounts an union file system over your curr
 
 In this way, if you decide you want to undo what you've just done, you just remove the paper, **ie.** the sandbox.
 
+There are quite a few **different types of sandboxes** available, so whether you need a quick ephemeral container, to a permanent sandbox to host your testing and development applications in, we've got you covered!
+
 ## Usage
 
 ### How do I install it?
@@ -78,6 +80,10 @@ Usage: ./sandbox [OPTIONS]... [COMMAND]
 
 See https://github.com/cal2195/Sandbox for more information!
 ```
+
+## Advanced Usage
+### Nesting Sandboxes
+Sandboxes can be happily nested, simply just call another `sandbox` command from within a sandbox! This would allow you to have multiple "roll back" points if you're trying out many new things!
 
 ## Warnings!
 * If you're using the RAM disk option, **make sure** you read the warnings above in the memory section!
