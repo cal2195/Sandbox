@@ -30,7 +30,9 @@ Once you name the sandbox, you can connect multiple terminals to the same sandbo
 
 ### Nice! But what if I want a sandbox to persist between reboots?
 To make a sandbox **permanent**, you just add the `-p` flag!
+
 `sandbox -n dontdeleteme -p` or more simply `sandbox -pn dontdeleteme`
+
 Keep in mind this flag requires a name, otherwise you won't be able to get back to it!
 
 ### Uh oh! I've forgotten what I named my sandbox!
@@ -39,6 +41,7 @@ Don't fear my friend, we've got you covered! To list all **semi-permanent** sand
 `sandbox -l`
 
 If it's a **permanent** sandbox you're after, simply add the permanent flag!
+
 `sandbox -p -l` or `sandbox -pl`
 
 ### Is it only the terminal that's sandboxed?
@@ -48,14 +51,18 @@ Anything that's done from within that terminal is also sandboxed! So if you run 
 Sandbox also supports **RAM Disks**, which being backed by your RAM has some interesting pros!
 #### Pros
 * Speed! - RAM is much **faster** than hard disks, so you'll get much faster read write speeds!
+
 * Security! - As RAM is wiped on reboot, all changes will be *forever* lost to the void! As long as you keep in mind the warnings, it's a much more **secure way** to store temporary data as nothing will be written to disk! (**See warnings!**)
 
 #### Cons
 * Limited Space! - As a RAM disk is backed by your available RAM, **you'll only be able to write as much data as you have free memory (RAM) left!** So a 1GB file would need at least 1GB free RAM to store it! Keep this in mind as running out of RAM will not only produce **write errors** in your Sandbox, but you also risk **crashing your host system** if you run out of free memory! D:
+
 * Swap Leaks! - In contrast to the **Security** pro above, if you have swap enabled on your system, you will negate the security factor! As RAM fills up, Linux will put certain portions of the RAM onto your swap partition, writing it to disk! Unless this swap is encrypted, you'll be writing your sandbox directly to disk, making it possible to recover the data with special tools!
 
 Now! After you've read through all that, to spawn a RAM backed sandbox, simple add the memory flag!
+
 `sandbox -m` or `sandbox -m -n coolramdisk`
+
 There's no point using the permanent flag with this one, as RAM is wiped once it looses power!
 
 ### Can you compare all the types of sandboxes in a nice table for me?
