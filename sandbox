@@ -34,7 +34,7 @@ else
 fi
 
 #Parse commands
-while getopts ":n:hdlpm" opt; do
+while getopts ":n:hdlpmg:" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -52,6 +52,9 @@ while getopts ":n:hdlpm" opt; do
       ;;
     l)
       LISTBOXES=true
+      ;;
+    g)
+      GRAINS=$OPTARG
       ;;
     \?)
       echo "Invalid flag: -$OPTARG" >&2
@@ -127,6 +130,12 @@ else
   sudo grep -q -F "PS1=$PSSAND" $tmprt/etc/environment || echo "PS1=$PSSAND" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "DISPLAY=${DISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${DISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
+  #Initialise with any sand grains
+  if [ "$GRAINS" != "" ]; then
+    sudo chroot $tmprt apt-get update
+    sudo chroot $tmprt apt-get install curl
+    sudo chroot $tmprt curl url | /bin/bash
+  fi
   #And we're away! :D
   if [ "$#" -eq  "0" ]; then
     sudo chroot $tmprt su - $USER
