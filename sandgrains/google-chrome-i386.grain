@@ -1,5 +1,5 @@
 apt-get install -y libxss1 libappindicator1 libindicator7
-curl -sL "https://dl.google.com/linux/direct/google-chrome-stable_current_i386.deb"
+curl -sL -o google-chrome-stable_current_i386.deb "https://dl.google.com/linux/direct/google-chrome-stable_current_i386.deb"
 dpkg -i google-chrome*.deb
 apt-get install -f -y
 rm google-chrome-stable_current_amd64.deb
