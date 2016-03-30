@@ -9,6 +9,7 @@ usage()
   echo "    -p        permanent sandbox"
   echo "    -m        in-memory sandbox"
   echo "    -g        comma separated grains, or 'list' to see all"
+  echo "    -o        opens your filemanager to see the sandbox's filesystem"
   echo "    -h        show this help text"
   echo "    COMMAND   command to run instead of shell"
   echo ""

@@ -120,6 +120,7 @@ Usage: ./sandbox [OPTIONS]... [COMMAND]
     -p          permanent sandbox
     -m          in-memory sandbox
     -g          comma separated grains, or 'list' to see all
+    -o          opens your filemanager to see the sandbox's filesystem
     -h          show this help text
     COMMAND     command to run instead of shell
 
