@@ -21,6 +21,7 @@ LISTBOXES=false
 RAMDISK=false
 NEEDSDEPS=false
 XSESSION=false
+VIEWOVERLAY=false
 ROOTDIR="/tmp/sandbox"
 
 #Check for unionfs-fuse
@@ -35,7 +36,7 @@ else
 fi
 
 #Parse commands
-while getopts ":n:hdlpmg:x" opt; do
+while getopts ":n:hdlpmg:xo" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -56,6 +57,9 @@ while getopts ":n:hdlpmg:x" opt; do
       ;;
     g)
       GRAINS=$OPTARG
+      ;;
+    o)
+      VIEWOVERLAY=true
       ;;
     x)
       XSESSION=true
@@ -92,6 +96,12 @@ if [ "$RAMDISK" == true ]; then
   mkdir -p /tmp/ram/sandbox
   sudo mount -t tmpfs tmpfs /tmp/ram/sandbox
   ROOTDIR="/tmp/ram/sandbox"
+fi
+
+#Check if they want to view files
+if [ "$VIEWOVERLAY" == true ]; then
+  xdg-open $ROOTDIR/$NAME/rw
+  exit
 fi
 
 #Install dependencies & sandbox
