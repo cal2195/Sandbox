@@ -3,7 +3,8 @@
 A little shell script to create various types of sandboxes on the fly!
 
 ## Prerequisites
-* Linux - *(Ubuntu and openSUSE tested)*
+* Linux - *(xUbuntu and openSUSE tested)*
+* /bin/bash *(Others are untested!)*
 * unionfs-fuse - (installed automatically using the **install** command)
 
 ## What does it do?
@@ -21,7 +22,7 @@ Simply run `./sandbox install` - The install command will install all needed dep
 Alternatively, you can install `unionfs-fuse` yourself and use `./sandbox` as a portable application!
 
 ### Okay, now what?
-Once installed, you can create a sandbox from anywhere by typing `sandbox` in a terminal. This will create a **temporary** sandbox, that will be destroyed once you exit it. *See **Types of Sandboxes** below!*
+Once installed, you can create a sandbox from anywhere by typing `sandbox` in a terminal. This will create a **temporary** sandbox, that will be destroyed once you exit it. See *Types of Sandboxes* below!
 
 ### That's cool! But what if I want to access the sandbox again?
 To prevent the sandbox from being destroyed, you can give it a **name**! `sandbox -n firefox` This will create a **semi-permanent** sandbox, which will persist until *reboot*. (**see warnings below!**)
@@ -55,6 +56,17 @@ Yes you can! Just add the command for the application after the flags!
 If you need to **pass in parameters**, make sure you enclose them in quotes!
 
 `sandbox -pn stay "mousepad /home/cal/Sandbox/README.md"`
+
+### Awesome! It's annoying having to install all my software everytime though... Can you help?
+No problem! You need *sand grains*! These are little pre-configured scripts for automatically installing software in your sandboxes! Simply use the `-g` flag, comma separating any sand grains you would like to install!
+
+`sandbox -g firefox,transmission -n downloadbox`
+
+Want to know what sand grains are available? Simply use the `-g list` option!
+
+`sandbox -g list`
+
+Your piece of software not there? Why not make one! Take a look at the `sandgrains` folder above to see how they're done, **fork this repo** and **make a pull request** once you're done! :D
 
 ### Is it speed or security you're after?
 Sandbox also supports **RAM Disks**, which being backed by your RAM has some interesting pros!
