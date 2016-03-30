@@ -2,4 +2,4 @@ curl -L -o google-chrome-stable_current_amd64.deb "https://dl.google.com/linux/d
 apt-get install -y libxss1 libappindicator1 libindicator7
 dpkg -i google-chrome-stable_current_amd64.deb
 apt-get install -f -y
-rm google-chrome-stable_current_amd64.deb
+#rm google-chrome-stable_current_amd64.deb
