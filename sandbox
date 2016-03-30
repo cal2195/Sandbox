@@ -56,6 +56,11 @@ while getopts ":n:hdlpmg:xo" opt; do
       LISTBOXES=true
       ;;
     g)
+      if [ "$OPTARG" == "list" ]; then
+        echo "Getting list of sand grains..."
+        curl -sL "https://github.com/cal2195/Sandbox/raw/master/sandgrains/grains.txt"
+        exit
+      fi
       GRAINS=$OPTARG
       ;;
     o)
@@ -155,7 +160,7 @@ else
     for grain in $(echo $GRAINS | sed "s/,/ /g")
     do
       #Install each grain
-      sudo chroot $tmprt curl -L "https://github.com/cal2195/Sandbox/raw/master/sandgrains/$grain.grain" | sudo chroot $tmprt /bin/bash
+      sudo chroot $tmprt curl -sL "https://github.com/cal2195/Sandbox/raw/master/sandgrains/$grain.grain" | sudo chroot $tmprt /bin/bash
     done
 
   fi
