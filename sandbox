@@ -20,6 +20,7 @@ DELETENOW=false
 LISTBOXES=false
 RAMDISK=false
 NEEDSDEPS=false
+XSESSION=false
 ROOTDIR="/tmp/sandbox"
 
 #Check for unionfs-fuse
@@ -34,7 +35,7 @@ else
 fi
 
 #Parse commands
-while getopts ":n:hdlpmg:" opt; do
+while getopts ":n:hdlpmg:x" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -55,6 +56,9 @@ while getopts ":n:hdlpmg:" opt; do
       ;;
     g)
       GRAINS=$OPTARG
+      ;;
+    x)
+      XSESSION=true
       ;;
     \?)
       echo "Invalid flag: -$OPTARG" >&2
@@ -140,11 +144,18 @@ else
     sudo chroot $tmprt apt-get install curl
     sudo chroot $tmprt curl -L "https://github.com/cal2195/Sandbox/raw/master/sandgrains/$GRAINS.grain" | sudo chroot $tmprt /bin/bash
   fi
-  #And we're away! :D
-  if [ "$#" -eq  "0" ]; then
-    sudo chroot $tmprt su - $USER
+  #Check if xsession
+  if [ "$XSESSION" == true ]; then
+    sudo chroot $tmprt rm -r /tmp/.X11-unix
+    sudo chroot $tmprt su - $USER -c "sudo rm .Xauthority*"
+    sudo chroot $tmprt su - $USER -c "startx -- :2"
   else
-    sudo chroot $tmprt su - $USER -c "$@"
+    #And we're away! :D
+    if [ "$#" -eq  "0" ]; then
+      sudo chroot $tmprt su - $USER
+    else
+      sudo chroot $tmprt su - $USER -c "$@"
+    fi
   fi
   #Clean up after exit
   if [ "$REMOVEAFTER" == true ]; then
