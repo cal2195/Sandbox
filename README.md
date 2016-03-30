@@ -25,7 +25,11 @@ Alternatively, you can install `unionfs-fuse` yourself and use `./sandbox` as a 
 Once installed, you can create a sandbox from anywhere by typing `sandbox` in a terminal. This will create a **temporary** sandbox, that will be destroyed once you exit it. See *Types of Sandboxes* below!
 
 ### That's cool! But what if I want to access the sandbox again?
-To prevent the sandbox from being destroyed, you can give it a **name**! `sandbox -n firefox` This will create a **semi-permanent** sandbox, which will persist until *reboot*. (**see warnings below!**)
+To prevent the sandbox from being destroyed, you can give it a **name**!
+
+`sandbox -n firefox`
+
+This will create a **semi-permanent** sandbox, which will persist until *reboot*. (**see warnings below!**)
 
 Once you name the sandbox, you can connect multiple terminals to the same sandbox by using the **same name**. You can also reattach to an exited sandbox by using it's name.
 
