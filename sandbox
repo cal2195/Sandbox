@@ -152,7 +152,12 @@ else
       sudo chroot $tmprt apt-get update
     fi
     sudo chroot $tmprt apt-get install curl
-    sudo chroot $tmprt curl -L "https://github.com/cal2195/Sandbox/raw/master/sandgrains/$GRAINS.grain" | sudo chroot $tmprt /bin/bash
+    for grain in $(echo $GRAINS | sed "s/,/ /g")
+    do
+      #Install each grain
+      sudo chroot $tmprt curl -L "https://github.com/cal2195/Sandbox/raw/master/sandgrains/$grain.grain" | sudo chroot $tmprt /bin/bash
+    done
+
   fi
   #Check if xsession
   if [ "$XSESSION" == true ]; then
