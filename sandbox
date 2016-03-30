@@ -85,6 +85,9 @@ shift $(($OPTIND - 1))
 
 #Delete if required
 if [ "$DELETENOW" == true ]; then
+  if [ "$RAMDISK" == true ]; then
+    ROOTDIR="/tmp/ram/sandbox"
+  fi
   sudo rm -r $ROOTDIR/$NAME/rw
   echo "Sandbox deleted!"
   exit
