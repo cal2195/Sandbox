@@ -3,13 +3,14 @@
 usage()
 {
   echo "Usage: $0 [OPTIONS]... [COMMAND]"
-  echo "    -n NAME     name the sandbox"
-  echo "    -d          delete the named sandbox"
-  echo "    -l          list all sandboxes"
-  echo "    -p          permanent sandbox"
-  echo "    -m          in-memory sandbox"
-  echo "    -h          show this help text"
-  echo "    COMMAND     command to run instead of shell"
+  echo "    -n NAME   name the sandbox"
+  echo "    -d        delete the named sandbox"
+  echo "    -l        list all sandboxes"
+  echo "    -p        permanent sandbox"
+  echo "    -m        in-memory sandbox"
+  echo "    -g        comma separated grains, or 'list' to see all"
+  echo "    -h        show this help text"
+  echo "    COMMAND   command to run instead of shell"
   echo ""
   echo "See https://github.com/cal2195/Sandbox for more information!"
 }

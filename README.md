@@ -108,6 +108,7 @@ Usage: ./sandbox [OPTIONS]... [COMMAND]
     -l          list all sandboxes
     -p          permanent sandbox
     -m          in-memory sandbox
+    -g          comma separated grains, or 'list' to see all
     -h          show this help text
     COMMAND     command to run instead of shell
 
