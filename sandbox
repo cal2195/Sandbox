@@ -114,7 +114,7 @@ if [ "$1" == "install" ]; then
   echo "Installing..."
   if [ "$NEEDSDEPS" == true ]; then
     sudo apt-get update
-    sudo apt-get install unionfs-fuse
+    sudo apt-get install -y unionfs-fuse
   fi
   sudo cp $0 /usr/local/bin/$0
   echo "Installed!"
@@ -167,7 +167,7 @@ else
     if [[ $(( $(date +%s) - $(stat -c %Z $tmprt/var/cache/apt/pkgcache.bin) )) -gt $(( 24 * 60 * 60 )) ]]; then
       sudo chroot $tmprt apt-get update
     fi
-    sudo chroot $tmprt apt-get install curl
+    sudo chroot $tmprt apt-get install -y curl
     for grain in $(echo $GRAINS | sed "s/,/ /g")
     do
       #Install each grain
