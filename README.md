@@ -72,6 +72,13 @@ Want to know what sand grains are available? Simply use the `-g list` option!
 
 Your piece of software not there? Why not make one! Take a look at the `sandgrains` folder above to see how they're done, **fork this repo** and **make a pull request** once you're done! :D
 
+### How can I get files out of the sandbox?
+To access the filesystem of your sandbox, just use the `-o` flag!
+
+`sandbox -pn mysandbox -o`
+
+This will open a folder at the **root** of your sandbox, allowing you to locate your files within the sandbox, and copy them elsewhere if desired!
+
 ### Is it speed or security you're after?
 Sandbox also supports **RAM Disks**, which being backed by your RAM has some interesting pros!
 #### Pros
