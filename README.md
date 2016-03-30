@@ -139,4 +139,4 @@ Sandboxes can be happily nested, simply just call another `sandbox` command from
 
 ## Warnings!
 * If you're using the RAM disk option, **make sure** you read the warnings above in the memory section!
-* It should also be noted that **semi-permanent** sandboxes hang around until the `/tmp` folder is wiped, which is generally configured for just after the **boot up** of the system!
+* It should also be noted that **semi-permanent** sandboxes hang around until the `/tmp` folder is wiped, which is generally configured for just after the **next boot up** of the system!
