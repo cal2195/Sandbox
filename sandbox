@@ -118,6 +118,17 @@ if [ "$1" == "install" ]; then
   fi
   sudo cp $0 /usr/local/bin/$0
   echo "Installed!"
+  exit
+elif [ "$1" == "update" ]; then
+  if command -v curl >/dev/null 2>&1; then
+    echo "Updating..."
+    sudo curl -sL -o $0 "https://github.com/cal2195/Sandbox/raw/master/sandbox"
+    echo "Update Successful!"
+    exit
+  else
+    echo "curl is required for auto updating! try 'sudo apt-get install curl' first!"
+    exit
+  fi
 else
   #Determine sandbox type
   if [ "$NAME" == "" ]; then
