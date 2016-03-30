@@ -106,7 +106,7 @@ fi
 
 #Check if they want to view files
 if [ "$VIEWOVERLAY" == true ]; then
-  xdg-open $ROOTDIR/$NAME/rw
+  xdg-open $ROOTDIR/$NAME/rt
   exit
 fi
 
