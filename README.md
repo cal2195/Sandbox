@@ -30,6 +30,11 @@ To get the latest version of the script, regardless how you installed it, you ca
 ### Okay, now what?
 Once installed, you can create a sandbox from anywhere by typing `sandbox` in a terminal. This will create a **temporary** sandbox, that will be destroyed once you exit it. See *Types of Sandboxes* below!
 
+### How do I get out of the sandbox?
+To safely exit any sandbox, use the command `logout`. This will destroy the sandbox *if* it is a temporary one!
+
+A **shortcut** for this is `CTRL-D`! *(This must be done with nothing typed in the terminal!)*
+
 ### That's cool! But what if I want to access the sandbox again?
 To prevent the sandbox from being destroyed, you can give it a **name**!
 
