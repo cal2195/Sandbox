@@ -184,7 +184,7 @@ else
   if [ "$XSESSION" == true ]; then
     sudo chroot $tmprt rm -r /tmp/.X11-unix
     sudo chroot $tmprt su - $USER -c "sudo rm .Xauthority*"
-    if [ "$(tty)" == *"tty"* ]; then
+    if [[ "$(tty)" == *"tty"* ]]; then
       sudo chroot $tmprt su - $USER -c "startx -- :2"
     else
       if command -v Xephyr >/dev/null 2>&1; then
