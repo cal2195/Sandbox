@@ -184,7 +184,16 @@ else
   if [ "$XSESSION" == true ]; then
     sudo chroot $tmprt rm -r /tmp/.X11-unix
     sudo chroot $tmprt su - $USER -c "sudo rm .Xauthority*"
-    sudo chroot $tmprt su - $USER -c "startx -- :2"
+    if [ "$(tty)" == *"tty"* ]; then
+      sudo chroot $tmprt su - $USER -c "startx -- :2"
+    else
+      if command -v Xephyr >/dev/null 2>&1; then
+        xhost +
+        sudo chroot $tmprt su - $USER -c "startx -- /usr/bin/Xephyr -ac -br :1"
+      else
+        echo "-x requires Xephyr installed, unless sandbox is run in a tty! try 'sudo apt-get install xserver-xephyr'"
+      fi
+    fi
   else
     #And we're away! :D
     if [ "$#" -eq  "0" ]; then
