@@ -3,7 +3,7 @@
 A little shell script to create various types of sandboxes on the fly!
 
 ## Prerequisites
-* Linux - *(xUbuntu and openSUSE tested)*
+* Linux - *(xUbuntu, openSUSE, and LinuxMint tested)*
 * /bin/bash *(Others are untested!)*
 * unionfs-fuse - (installed automatically using the **install** command)
 
