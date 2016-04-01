@@ -1,4 +1,4 @@
-# Sandbox
+# Sandbox [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/cal2195/Sandbox/master/LICENSE.md) [![GitHub issues](https://img.shields.io/github/issues/cal2195/Sandbox.svg?style=flat-square)](https://github.com/cal2195/Sandbox/issues)
 
 A little shell script to create various types of sandboxes on the fly!
 
