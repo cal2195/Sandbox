@@ -117,6 +117,7 @@ fi
 if [ "$USINGPIT" == true ]; then
   if [ "$INSTALLPIT" == true ]; then
     curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$PITFILE.pit" | PITDEST=$SANDBOXROOT/$PITDEST/$NAME PITDIST=$PITDIST /bin/bash
+    sudo chroot $SANDBOXROOT/$PITDEST/$NAME adduser $USER
   elif [ ! -f $SANDBOXROOT/$PITDEST/$NAME ]; then
     echo "No sandpit named $NAME exist! Try using -i to install one!"
     exit
