@@ -116,13 +116,15 @@ fi
 #Check if using pits
 if [ "$USINGPIT" == true ]; then
   if [ "$INSTALLPIT" == true ]; then
-    curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$PITFILE.pit" | PITDEST=$SANDBOXROOT/$PITDEST/$NAME PITDIST=$PITDIST /bin/bash
-    sudo chroot $SANDBOXROOT/$PITDEST/$NAME adduser $USER
-  elif [ ! -f $SANDBOXROOT/$PITDEST/$NAME ]; then
+    curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$PITFILE.pit" | PITDEST=$SANDBOXROOT/$PITDEST/$SANDPIT PITDIST=$PITDIST /bin/bash
+    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER
+    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER sudo
+    sudo cp /etc/resolv.conf $SANDBOXROOT/$PITDEST/$SANDPIT/etc/resolv.conf
+  elif [ ! -d $SANDBOXROOT/$PITDEST/$SANDPIT ]; then
     echo "No sandpit named $NAME exist! Try using -i to install one!"
     exit
   fi
-  SYSROOT="$SANDBOXROOT/$PITDEST/$NAME"
+  SYSROOT="$SANDBOXROOT/$PITDEST/$SANDPIT"
 fi
 
 #Delete if required
