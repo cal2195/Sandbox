@@ -209,8 +209,8 @@ else
   #Mount system folders
   sudo mount -t proc proc $tmprt/proc
   sudo mount -t sysfs sys $tmprt/sys
-  sudo mount --rbind $SYSROOTdev $tmprt/dev
-  sudo mount --rbind $SYSROOTrun $tmprt/run
+  sudo mount --rbind $SYSROOT/dev $tmprt/dev
+  sudo mount --rbind $SYSROOT/run $tmprt/run
   #Change PS1 prompt & set DISPLAY
   PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
   sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
