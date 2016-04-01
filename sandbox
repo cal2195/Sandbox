@@ -26,6 +26,12 @@ XSESSION=false
 VIEWOVERLAY=false
 NEWDISPLAY=$DISPLAY
 ROOTDIR="/tmp/sandbox"
+#Default Debootstrap
+USINGPIT=false
+INSTALLPIT=false
+SANDPIT="ubuntu"
+PITDIST="$(lsb_release -sc)"
+PITDEST="$HOME/.sandbox/pits"
 
 #Check for unionfs-fuse
 if command -v unionfs >/dev/null 2>&1; then
@@ -39,7 +45,7 @@ else
 fi
 
 #Parse commands
-while getopts ":n:hdlpmg:xo" opt; do
+while getopts ":n:hdlpmg:xoti:v:" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -57,6 +63,16 @@ while getopts ":n:hdlpmg:xo" opt; do
       ;;
     l)
       LISTBOXES=true
+      ;;
+    t)
+      USINGPIT=true
+      ;;
+    i)
+      INSTALLPIT=true
+      SANDPIT=$OPTARG
+      ;;
+    v)
+      PITDIST=$OPTARG
       ;;
     g)
       if [ "$OPTARG" == "list" ]; then
@@ -84,6 +100,17 @@ while getopts ":n:hdlpmg:xo" opt; do
   esac
 done
 shift $(($OPTIND - 1))
+
+#Check if using pits
+if [ "$USINGPIT" == true ]; then
+  ROOTDIR=$PITDEST/$NAME
+  if [ "$INSTALLPIT" == true ]; then
+    curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$SANDPIT.pit" | /bin/bash
+  elif [ ! -f $ROOTDIR ]; then
+    echo "No sandpit named $NAME exist! Try using -i to install one!"
+    exit
+  fi
+fi
 
 #Delete if required
 if [ "$DELETENOW" == true ]; then

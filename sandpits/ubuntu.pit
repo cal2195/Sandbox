@@ -1,0 +1,1 @@
+debootstrap $PITDIST $PITDEST;sudo chroot $PITDEST "apt-get update";sudo chroot $PITDEST "apt-get install ubuntu-desktop"
