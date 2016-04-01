@@ -105,7 +105,7 @@ shift $(($OPTIND - 1))
 if [ "$USINGPIT" == true ]; then
   ROOTDIR=$PITDEST/$NAME
   if [ "$INSTALLPIT" == true ]; then
-    curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$SANDPIT.pit" | /bin/bash
+    curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$SANDPIT.pit" | PITDEST=$PITDEST PITDIST=$PITDIST /bin/bash
   elif [ ! -f $ROOTDIR ]; then
     echo "No sandpit named $NAME exist! Try using -i to install one!"
     exit
