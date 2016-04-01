@@ -18,6 +18,7 @@ usage()
 
 #Default values
 REMOVEAFTER=true
+PERMANENT=false
 DELETENOW=false
 LISTBOXES=false
 RAMDISK=false
@@ -25,14 +26,15 @@ NEEDSDEPS=false
 XSESSION=false
 VIEWOVERLAY=false
 NEWDISPLAY=$DISPLAY
-ROOTDIR="/tmp/sandbox"
+SANDBOXROOT="$HOME/.sandbox"
+MNTDIR="/tmp/sandbox"
 SYSROOT="/"
 #Default Debootstrap
 USINGPIT=false
 INSTALLPIT=false
-SANDPIT="ubuntu"
+PITFILE="ubuntu"
 PITDIST="$(lsb_release -sc)"
-PITDEST="$HOME/.sandbox/pits"
+PITDEST=".pits"
 
 #Check for unionfs-fuse
 if command -v unionfs >/dev/null 2>&1; then
@@ -46,7 +48,7 @@ else
 fi
 
 #Parse commands
-while getopts ":n:hdlpmg:xori:v:" opt; do
+while getopts ":n:hdlpmg:xor:i:v:s:" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -56,7 +58,7 @@ while getopts ":n:hdlpmg:xori:v:" opt; do
       DELETENOW=true
       ;;
     p)
-      ROOTDIR="$HOME/.sandbox"
+      PERMANENT=true
       ;;
     m)
       RAMDISK=true
@@ -67,10 +69,14 @@ while getopts ":n:hdlpmg:xori:v:" opt; do
       ;;
     r)
       USINGPIT=true
+      SANDPIT=$OPTARG
       ;;
     i)
       INSTALLPIT=true
-      SANDPIT=$OPTARG
+      PITFILE=$OPTARG
+      ;;
+    s)
+      SANDBOXROOT=$OPTARG
       ;;
     v)
       PITDIST=$OPTARG
@@ -102,23 +108,28 @@ while getopts ":n:hdlpmg:xori:v:" opt; do
 done
 shift $(($OPTIND - 1))
 
+#Check for Permanent
+if [ "$PERMANENT" == true ]; then
+  MNTDIR=$SANDBOXROOT
+fi
+
 #Check if using pits
 if [ "$USINGPIT" == true ]; then
   if [ "$INSTALLPIT" == true ]; then
-    curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$SANDPIT.pit" | PITDEST=$PITDEST PITDIST=$PITDIST /bin/bash
-  elif [ ! -f $PITDEST/$NAME ]; then
+    curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$PITFILE.pit" | PITDEST=$SANDBOXROOT/$PITDEST/$NAME PITDIST=$PITDIST /bin/bash
+  elif [ ! -f $SANDBOXROOT/$PITDEST/$NAME ]; then
     echo "No sandpit named $NAME exist! Try using -i to install one!"
     exit
   fi
-  SYSROOT="$PITDEST/$NAME"
+  SYSROOT="$SANDBOXROOT/$PITDEST/$NAME"
 fi
 
 #Delete if required
 if [ "$DELETENOW" == true ]; then
   if [ "$RAMDISK" == true ]; then
-    ROOTDIR="/tmp/ram/sandbox"
+    MNTDIR="/tmp/ram/sandbox"
   fi
-  sudo rm -r $ROOTDIR/$NAME/rw
+  sudo rm -r $MNTDIR/$NAME/rw
   echo "Sandbox deleted!"
   exit
 fi
@@ -126,7 +137,7 @@ fi
 #List sandboxes
 if [ "$LISTBOXES" == true ]; then
   echo "Sandboxes:"
-  ls $ROOTDIR
+  ls $MNTDIR
   exit
 fi
 
@@ -134,12 +145,12 @@ fi
 if [ "$RAMDISK" == true ]; then
   mkdir -p /tmp/ram/sandbox
   sudo mount -t tmpfs tmpfs /tmp/ram/sandbox
-  ROOTDIR="/tmp/ram/sandbox"
+  MNTDIR="/tmp/ram/sandbox"
 fi
 
 #Check if they want to view files
 if [ "$VIEWOVERLAY" == true ]; then
-  xdg-open $ROOTDIR/$NAME/rt
+  xdg-open $MNTDIR/$NAME/rt
   exit
 fi
 
@@ -176,8 +187,8 @@ else
   #Determine sandbox type
   if [ "$NAME" == "" ]; then
     if [ "$RAMDISK" == true ]; then
-      tmprw="$ROOTDIR/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rw"
-      tmprt="$ROOTDIR/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rt"
+      tmprw="$MNTDIR/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rw"
+      tmprt="$MNTDIR/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rt"
       NAME="rambox"
     else
       tmprw="/tmp/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rw"
@@ -187,10 +198,10 @@ else
     mkdir -p $tmprw
     mkdir -p $tmprt
   else
-    mkdir -p $ROOTDIR/$NAME/rw
-    mkdir -p $ROOTDIR/$NAME/rt
-    tmprw="$ROOTDIR/$NAME/rw"
-    tmprt="$ROOTDIR/$NAME/rt"
+    mkdir -p $MNTDIR/$NAME/rw
+    mkdir -p $MNTDIR/$NAME/rt
+    tmprw="$MNTDIR/$NAME/rw"
+    tmprt="$MNTDIR/$NAME/rt"
   fi
   #Mount unionfs
   sudo $UNION -o allow_other,default_permissions,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:$SYSROOT=ro $tmprt
