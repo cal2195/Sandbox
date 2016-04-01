@@ -1,1 +1,1 @@
-sudo debootstrap $PITDIST $PITDEST;sudo adduser $USER
+sudo debootstrap $PITDIST $PITDEST;sudo chroot $PITDEST adduser $USER
