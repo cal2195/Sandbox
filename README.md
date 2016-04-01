@@ -9,12 +9,12 @@ A little shell script to create various types of sandboxes on the fly!
 
 ## Feature Compatibility
 
-Distribution  | Sandbox (temp)  | Sandbox (semi)  | Sandbox (perm)  | Sand grains
---------------|-----------------|-----------------|-----------------|------------
-xUbuntu       | Y               | Y               | Y               | Y
-Linux Mint    | Y               | Y               | Y               | Y
-openSUSE      | Y               | Y               | Y               | Y
-GalliumOS     | Y               | Y               | Y               | Y
+Distribution      | Sandbox (temp)  | Sandbox (semi)  | Sandbox (perm)  | Sand grains
+------------------|-----------------|-----------------|-----------------|------------
+**xUbuntu**       | Y               | Y               | Y               | Y
+**Linux Mint**    | Y               | Y               | Y               | Y
+**openSUSE**      | Y               | Y               | Y               | Y
+**GalliumOS**     | Y               | Y               | Y               | Y
 
 ## What does it do?
 Sandbox is a little shell script that mounts an union file system over your current root file system. You can think of it like placing a sheet of *transparent paper* over your current file system. All files can be read from within the sandbox, but any changes or **writes get written to the paper**, not the original file system!
