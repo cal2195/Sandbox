@@ -26,6 +26,7 @@ XSESSION=false
 VIEWOVERLAY=false
 NEWDISPLAY=$DISPLAY
 ROOTDIR="/tmp/sandbox"
+SYSROOT="/"
 #Default Debootstrap
 USINGPIT=false
 INSTALLPIT=false
@@ -45,7 +46,7 @@ else
 fi
 
 #Parse commands
-while getopts ":n:hdlpmg:xoti:v:" opt; do
+while getopts ":n:hdlpmg:xori:v:" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -64,7 +65,7 @@ while getopts ":n:hdlpmg:xoti:v:" opt; do
     l)
       LISTBOXES=true
       ;;
-    t)
+    r)
       USINGPIT=true
       ;;
     i)
@@ -103,13 +104,13 @@ shift $(($OPTIND - 1))
 
 #Check if using pits
 if [ "$USINGPIT" == true ]; then
-  ROOTDIR=$PITDEST/$NAME
   if [ "$INSTALLPIT" == true ]; then
     curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$SANDPIT.pit" | PITDEST=$PITDEST PITDIST=$PITDIST /bin/bash
-  elif [ ! -f $ROOTDIR ]; then
+  elif [ ! -f $PITDEST/$NAME ]; then
     echo "No sandpit named $NAME exist! Try using -i to install one!"
     exit
   fi
+  SYSROOT="$PITDEST/$NAME"
 fi
 
 #Delete if required
@@ -192,12 +193,12 @@ else
     tmprt="$ROOTDIR/$NAME/rt"
   fi
   #Mount unionfs
-  sudo $UNION -o allow_other,default_permissions,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:/=ro $tmprt
+  sudo $UNION -o allow_other,default_permissions,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:$SYSROOT=ro $tmprt
   #Mount system folders
   sudo mount -t proc proc $tmprt/proc
   sudo mount -t sysfs sys $tmprt/sys
-  sudo mount --rbind /dev $tmprt/dev
-  sudo mount --rbind /run $tmprt/run
+  sudo mount --rbind $SYSROOTdev $tmprt/dev
+  sudo mount --rbind $SYSROOTrun $tmprt/run
   #Change PS1 prompt & set DISPLAY
   PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
   sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
