@@ -150,3 +150,4 @@ Sandboxes can be happily nested, simply just call another `sandbox` command from
 * [ ] Add ramdisk saving/loading
 * [ ] Add notification when in sandbox
 * [ ] Add sandbox chaining
+* [ ] Update readme to include table of supported features per distro
