@@ -120,6 +120,7 @@ if [ "$USINGPIT" == true ]; then
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER sudo
     sudo cp /etc/resolv.conf $SANDBOXROOT/$PITDEST/$SANDPIT/etc/resolv.conf
+    sudo cp /etc/hosts $SANDBOXROOT/$PITDEST/$SANDPIT/etc/hosts
   elif [ ! -d $SANDBOXROOT/$PITDEST/$SANDPIT ]; then
     echo "No sandpit named $NAME exist! Try using -i to install one!"
     exit
