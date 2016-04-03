@@ -32,7 +32,7 @@ SYSROOT="/"
 #Default Debootstrap
 USINGPIT=false
 INSTALLPIT=false
-PITFILE="ubuntu"
+PITFILE="base"
 PITDIST="$(lsb_release -sc)"
 PITDEST=".pits"
 
@@ -116,7 +116,7 @@ fi
 #Check if using pits
 if [ "$USINGPIT" == true ]; then
   if [ "$INSTALLPIT" == true ]; then
-    sudo debootstrap $PITDIST $PITDEST
+    sudo debootstrap $PITDIST $SANDBOXROOT/$PITDEST/$SANDPIT
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER sudo
     sudo cp /etc/resolv.conf $SANDBOXROOT/$PITDEST/$SANDPIT/etc/resolv.conf
@@ -233,7 +233,7 @@ else
       sudo chroot $tmprt curl -sL "https://github.com/cal2195/Sandbox/raw/master/sandgrains/$grain.grain" | sudo chroot $tmprt /bin/bash
     done
   fi
-  if [ "$INSTALLPIT" == true ]; then
+  if [ "$INSTALLPIT" == true ] && [ "$PITFILE" != "base" ]; then
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get install software-properties-common
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get update
