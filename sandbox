@@ -248,7 +248,7 @@ else
     else
       if [ "$USINGPIT" == true ]; then
         Xephyr -ac :1
-        sudo chroot $tmprt su - $USER
+        sudo chroot $tmprt su - $USER -c "./start.sh"
       elif command -v Xephyr >/dev/null 2>&1; then
         xhost +
         sudo chroot $tmprt su - $USER -c "DISPLAY=$DISPLAY startx -- /usr/bin/Xephyr -ac :1"
