@@ -213,7 +213,7 @@ else
   sudo mount -t sysfs sys $tmprt/sys
   sudo mount --rbind /dev $tmprt/dev
   sudo mount --rbind /run $tmprt/run
-  sudo mount --rbind /var/run/dbus $tmprt/var/run/dbus
+  #sudo mount --rbind /var/run/dbus $tmprt/var/run/dbus
   #Change PS1 prompt & set DISPLAY
   PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
   sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
@@ -240,9 +240,12 @@ else
     if [[ "$(tty)" == *"tty"* ]]; then
       sudo chroot $tmprt su - $USER -c "startx -- :2"
     else
-      if command -v Xephyr >/dev/null 2>&1; then
+      if [ "$USINGPIT" == true ]; then
+        Xephyr -ac :1
+        sudo chroot $tmprt su - $USER
+      elif command -v Xephyr >/dev/null 2>&1; then
         xhost +
-        sudo chroot $tmprt su - $USER -c "DISPLAY=$DISPLAY startx -- /usr/bin/Xephyr -ac -br :1"
+        sudo chroot $tmprt su - $USER -c "DISPLAY=$DISPLAY startx -- /usr/bin/Xephyr -ac :1"
       else
         echo "-x requires Xephyr installed, unless sandbox is run in a tty! try 'sudo apt-get install xserver-xephyr'"
       fi
