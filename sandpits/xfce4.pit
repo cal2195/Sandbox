@@ -1,1 +1,1 @@
-sudo chroot $PITDEST apt-get install -y xfce4;sudo chroot $PITDEST echo startxfce4 > /home/$USER/start.sh;sudo chroot $PITDEST chmod +x /home/$USER/start.sh
+sudo chroot $PITDEST apt-get install -y xfce4;echo startxfce4 > $PITDEST/home/$USER/start.sh;sudo chroot $PITDEST chmod +x /home/$USER/start.sh
