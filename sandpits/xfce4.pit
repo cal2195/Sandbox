@@ -1,1 +1,1 @@
-sudo debootstrap $PITDIST $PITDEST;sudo chroot $PITDEST apt-get update;sudo chroot $PITDEST apt-get install -y xubuntu-desktop --no-install-recommends;echo "startxfce4" > /start.sh;chmod +x /start.sh
+sudo chroot $PITDEST apt-get install -y xubuntu-desktop --no-install-recommends;sudo chroot $PITDEST echo "startxfce4" > /start.sh;sudo chroot $PITDEST chmod +x /start.sh
