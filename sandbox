@@ -234,7 +234,7 @@ else
     done
   fi
   if [ "$INSTALLPIT" == true ] && [ "$PITFILE" != "base" ]; then
-    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get install software-properties-common
+    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get install -y software-properties-common
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get update
     curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$PITFILE.pit" | PITDEST=$SANDBOXROOT/$PITDEST/$SANDPIT PITDIST=$PITDIST /bin/bash
@@ -247,7 +247,7 @@ else
       sudo chroot $tmprt su - $USER -c "startx -- :2"
     else
       if [ "$USINGPIT" == true ]; then
-        Xephyr -ac :1
+        Xephyr -ac :1 &
         sudo chroot $tmprt su - $USER -c "./start.sh"
       elif command -v Xephyr >/dev/null 2>&1; then
         xhost +
