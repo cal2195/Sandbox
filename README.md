@@ -134,12 +134,28 @@ To get a quick look at all the commands available you can use the help flag!
 It will produce this output, which should be enough to jog your memory!
 ```
 Usage: ./sandbox [OPTIONS]... [COMMAND]
+
+Sandboxes
     -n NAME     name the sandbox
-    -d          delete the named sandbox
-    -l          list all sandboxes
     -p          permanent sandbox
     -m          in-memory sandbox
-    -g          comma separated grains, or 'list' to see all
+    -d          delete the named sandbox
+    -l          list all sandboxes
+
+Sandgrains
+    -g GRAIN    comma separated grains, or 'list' to see all
+
+Sandpits
+    -r NAME     new sandpit name
+    -i PIT      initialise sandpit
+    -v VARIENT  sandpit varient to install (eg. vivid)
+
+X-Session
+    -x          start an x-session
+    -f          start fullscreen (xephyr)
+
+Other
+    -s PATH     set sandbox root directory (eg. usb stick)
     -o          opens your filemanager to see the sandbox's filesystem
     -h          show this help text
     COMMAND     command to run instead of shell

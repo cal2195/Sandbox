@@ -3,15 +3,31 @@
 usage()
 {
   echo "Usage: $0 [OPTIONS]... [COMMAND]"
-  echo "    -n NAME   name the sandbox"
-  echo "    -d        delete the named sandbox"
-  echo "    -l        list all sandboxes"
-  echo "    -p        permanent sandbox"
-  echo "    -m        in-memory sandbox"
-  echo "    -g        comma separated grains, or 'list' to see all"
-  echo "    -o        opens your filemanager to see the sandbox's filesystem"
-  echo "    -h        show this help text"
-  echo "    COMMAND   command to run instead of shell"
+  echo ""
+  echo "Sandboxes"
+  echo "    -n NAME     name the sandbox"
+  echo "    -p          permanent sandbox"
+  echo "    -m          in-memory sandbox"
+  echo "    -d          delete the named sandbox"
+  echo "    -l          list all sandboxes"
+  echo ""
+  echo "Sandgrains"
+  echo "    -g GRAIN    comma separated grains, or 'list' to see all"
+  echo ""
+  echo "Sandpits"
+  echo "    -r NAME     new sandpit name"
+  echo "    -i PIT      initialise sandpit"
+  echo "    -v VARIENT  sandpit varient to install (eg. vivid)"
+  echo ""
+  echo "X-Session"
+  echo "    -x          start an x-session"
+  echo "    -f          start fullscreen (xephyr)"
+  echo ""
+  echo "Other"
+  echo "    -s PATH     set sandbox root directory (eg. usb stick)"
+  echo "    -o          opens your filemanager to see the sandbox's filesystem"
+  echo "    -h          show this help text"
+  echo "    COMMAND     command to run instead of shell"
   echo ""
   echo "See https://github.com/cal2195/Sandbox for more information!"
 }
@@ -46,6 +62,8 @@ INSTALLPIT=false
 PITFILE="base"
 PITDIST="$(lsb_release -sc)"
 PITDEST=".pits"
+#Commands
+XEPHYR="Xephyr -ac -resizeable :1"
 
 #Check for unionfs-fuse
 if command -v unionfs >/dev/null 2>&1; then
@@ -59,7 +77,7 @@ else
 fi
 
 #Parse commands
-while getopts ":n:hdlpmg:xor:i:v:s:" opt; do
+while getopts ":n:hdlpmg:xor:i:v:s:f" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -106,6 +124,9 @@ while getopts ":n:hdlpmg:xor:i:v:s:" opt; do
       ;;
     x)
       XSESSION=true
+      ;;
+    f)
+      XEPHYR="Xephyr -ac -fullscreen :1"
       ;;
     \?)
       echo "Invalid flag: -$OPTARG" >&2
@@ -257,11 +278,11 @@ else
     else
       if command -v Xephyr >/dev/null 2>&1; then
         if [ "$USINGPIT" == true ]; then
-          Xephyr -ac :1 &
+          $XEPHYR &
           sudo chroot $tmprt su - $USER -c "./start.sh"
         else
           xhost +
-          sudo chroot $tmprt su - $USER -c "DISPLAY=$DISPLAY startx -- /usr/bin/Xephyr -ac :1"
+          sudo chroot $tmprt su - $USER -c "DISPLAY=$DISPLAY startx -- /usr/bin/$XEPHYR"
         fi
       else
         echo "-x requires Xephyr installed, unless sandbox is run in a tty! try 'sudo apt-get install xserver-xephyr'"
