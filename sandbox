@@ -16,6 +16,17 @@ usage()
   echo "See https://github.com/cal2195/Sandbox for more information!"
 }
 
+checkCommand()
+{
+  if command -v $1 >/dev/null 2>&1; then
+    return 0
+  fi
+  if [[ $(( $(date +%s) - $(stat -c %Z $tmprt/var/cache/apt/pkgcache.bin) )) -gt $(( 24 * 60 * 60 )) ]]; then
+    sudo apt-get update
+  fi
+  sudo apt-get install $1
+}
+
 #Default values
 REMOVEAFTER=true
 PERMANENT=false
@@ -83,6 +94,7 @@ while getopts ":n:hdlpmg:xor:i:v:s:" opt; do
       ;;
     g)
       if [ "$OPTARG" == "list" ]; then
+        checkCommand curl
         echo "Getting list of sand grains..."
         curl -sL "https://github.com/cal2195/Sandbox/raw/master/sandgrains/grains.txt"
         exit
@@ -116,6 +128,7 @@ fi
 #Check if using pits
 if [ "$USINGPIT" == true ]; then
   if [ "$INSTALLPIT" == true ]; then
+    checkCommand debootstrap
     sudo debootstrap $PITDIST $SANDBOXROOT/$PITDEST/$SANDPIT
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER sudo
@@ -171,22 +184,17 @@ fi
 if [ "$1" == "install" ]; then
   echo "Installing..."
   if [ "$NEEDSDEPS" == true ]; then
-    sudo apt-get update
-    sudo apt-get install -y unionfs-fuse
+    checkCommand unionfs-fuse
   fi
   sudo cp $0 /usr/local/bin/$0
   echo "Installed!"
   exit
 elif [ "$1" == "update" ]; then
-  if command -v curl >/dev/null 2>&1; then
-    echo "Updating..."
-    sudo curl -sL -o $0 "https://github.com/cal2195/Sandbox/raw/master/sandbox"
-    echo "Update Successful!"
-    exit
-  else
-    echo "curl is required for auto updating! try 'sudo apt-get install curl' first!"
-    exit
-  fi
+  checkCommand curl
+  echo "Updating..."
+  sudo curl -sL -o $0 "https://github.com/cal2195/Sandbox/raw/master/sandbox"
+  echo "Update Successful!"
+  exit
 else
   #Determine sandbox type
   if [ "$NAME" == "" ]; then
@@ -237,6 +245,7 @@ else
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get install -y software-properties-common
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
     sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get update
+    checkCommand curl
     curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$PITFILE.pit" | PITDEST=$SANDBOXROOT/$PITDEST/$SANDPIT PITDIST=$PITDIST /bin/bash
   fi
   #Check if xsession
@@ -246,12 +255,14 @@ else
     if [[ "$(tty)" == *"tty"* ]]; then
       sudo chroot $tmprt su - $USER -c "startx -- :2"
     else
-      if [ "$USINGPIT" == true ]; then
-        Xephyr -ac :1 &
-        sudo chroot $tmprt su - $USER -c "./start.sh"
-      elif command -v Xephyr >/dev/null 2>&1; then
-        xhost +
-        sudo chroot $tmprt su - $USER -c "DISPLAY=$DISPLAY startx -- /usr/bin/Xephyr -ac :1"
+      if command -v Xephyr >/dev/null 2>&1; then
+        if [ "$USINGPIT" == true ]; then
+          Xephyr -ac :1 &
+          sudo chroot $tmprt su - $USER -c "./start.sh"
+        else
+          xhost +
+          sudo chroot $tmprt su - $USER -c "DISPLAY=$DISPLAY startx -- /usr/bin/Xephyr -ac :1"
+        fi
       else
         echo "-x requires Xephyr installed, unless sandbox is run in a tty! try 'sudo apt-get install xserver-xephyr'"
       fi
