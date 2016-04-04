@@ -1,0 +1,1 @@
+sudo chroot $PITDEST apt-get install -y lxde;echo "startlxde" > $PITDEST/home/$USER/start.sh;sudo chroot $PITDEST chmod +x /home/$USER/start.sh
