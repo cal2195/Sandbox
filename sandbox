@@ -101,6 +101,12 @@ while getopts ":n:hdlpmg:xor:i:v:s:f" opt; do
       SANDPIT=$OPTARG
       ;;
     i)
+      if [ "$OPTARG" == "list" ]; then
+        checkCommand curl
+        echo "Getting list of sandpits..."
+        curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/pits.txt"
+        exit
+      fi
       INSTALLPIT=true
       PITFILE=$OPTARG
       ;;
