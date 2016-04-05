@@ -43,6 +43,21 @@ checkCommand()
   sudo apt-get install $1
 }
 
+commitChanges()
+{
+  echo "*WARNING* You are about to commit all changes from $NAME to host system!"
+  read -p "Are you sure you want to do this? (y/N)" answer
+  case ${answer:0:1} in
+      y|Y)
+          sudo rsync -aAXvh --no-compress --progress $tmprw/ $SYSROOT
+          exit
+          ;;
+      *)
+          exit
+          ;;
+  esac
+}
+
 #Default values
 REMOVEAFTER=true
 PERMANENT=false
@@ -56,6 +71,7 @@ NEWDISPLAY=$DISPLAY
 SANDBOXROOT="$HOME/.sandbox"
 MNTDIR="/tmp/sandbox"
 SYSROOT="/"
+COMMITCHANGES=false
 #Default Debootstrap
 USINGPIT=false
 INSTALLPIT=false
@@ -77,7 +93,7 @@ else
 fi
 
 #Parse commands
-while getopts ":n:hdlpmg:xor:i:v:s:f" opt; do
+while getopts ":n:hdlpmg:xor:i:v:s:fc" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -133,6 +149,9 @@ while getopts ":n:hdlpmg:xor:i:v:s:f" opt; do
       ;;
     f)
       XEPHYR="Xephyr -ac -fullscreen :1"
+      ;;
+    c)
+      COMMITCHANGES=true
       ;;
     \?)
       echo "Invalid flag: -$OPTARG" >&2
@@ -241,6 +260,9 @@ else
     mkdir -p $MNTDIR/$NAME/rt
     tmprw="$MNTDIR/$NAME/rw"
     tmprt="$MNTDIR/$NAME/rt"
+  fi
+  if [ "$COMMITCHANGES" == true ]; then
+    commitChanges
   fi
   #Mount unionfs
   sudo $UNION -o allow_other,default_permissions,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:$SYSROOT=ro $tmprt
