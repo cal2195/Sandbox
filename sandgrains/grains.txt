@@ -1,5 +1,4 @@
 firefox                 |Firefox
 google-chrome-amd64     |Google Chrome 64bit
-google-chrome-i386      |Google Chrome 32bit
 octave                  |Octave
 transmission            |Transmission GUI
