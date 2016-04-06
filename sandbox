@@ -50,6 +50,13 @@ commitChanges()
   case ${answer:0:1} in
       y|Y)
           sudo rsync -aAXvh --no-compress --progress $tmprw/ $SYSROOT
+          if [ "$?" -eq "0" ]
+          then
+            sudo rm -r $tmprw
+            echo "All changes commited!"
+          else
+            echo "Error committing changes! :("
+          fi
           exit
           ;;
       *)
