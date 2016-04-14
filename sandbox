@@ -79,6 +79,7 @@ SANDBOXROOT="$HOME/.sandbox"
 MNTDIR="/tmp/sandbox"
 SYSROOT="/"
 COMMITCHANGES=false
+ENCRYPT=false
 #Default Debootstrap
 USINGPIT=false
 INSTALLPIT=false
@@ -100,7 +101,7 @@ else
 fi
 
 #Parse commands
-while getopts ":n:hdlpmg:xor:i:v:s:fc" opt; do
+while getopts ":n:hdlpmg:xor:i:v:s:fce" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -138,6 +139,9 @@ while getopts ":n:hdlpmg:xor:i:v:s:fc" opt; do
       ;;
     v)
       PITDIST=$OPTARG
+      ;;
+    e)
+      ENCRYPT=true
       ;;
     g)
       if [ "$OPTARG" == "list" ]; then
@@ -270,6 +274,11 @@ else
   fi
   if [ "$COMMITCHANGES" == true ]; then
     commitChanges
+  fi
+  if [ "$ENCRYPT" == true ]; then
+    checkCommand encfs
+    mkdir -p $tmprw.e
+    sudo encfs $tmprw.e $tmprw
   fi
   #Mount unionfs
   sudo $UNION -o allow_other,default_permissions,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:$SYSROOT=ro $tmprt
