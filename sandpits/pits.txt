@@ -1,0 +1,3 @@
+base            | minimal install
+lxde            | LXDE desktop environment
+xfce4           | XFCE4 desktop environment
