@@ -99,6 +99,24 @@ To access the filesystem of your sandbox, just use the `-o` flag!
 
 This will open a folder at the **root** of your sandbox, allowing you to locate your files within the sandbox, and copy them elsewhere if desired!
 
+### Wow! This is amazing! How could it get any better? :D
+Want to run an entire X-Session or Desktop Environment in a sandbox? Well you can! There are two ways to run it - in a window in your current X-Session using Xephyr, or in an entirely new X-Session!
+
+To start an X-Session in a window, simple add the `-x` flag to any sandbox command!
+
+`sandbox -n test -x`
+
+This will install Xephyr if needed, and start up a new X-Session in a window! If you want to run this window fullscreen, just use the `-f` flag too! :D
+
+`sandbox -x -f` or `sandbox -xf`
+
+To run the sandbox in a completely new X-Session, which will normally give you better performance, you just have to run the command in a new *tty*.
+
+To switch to a new tty, simple press `CTRL-ALT-F1`! This will bring up basically a fullscreen terminal! To switch back, just press `CTRL-ALT-F7`!
+
+If you then login and run a sandbox in this new terminal, it'll open a new X-Session!
+You can then normally switch between the X-Sessions by using `CTRL-ALT-F7` and `CTRL-ALT-F8`!
+
 ### Is it speed or security you're after?
 Sandbox also supports **RAM Disks**, which being backed by your RAM has some interesting pros!
 #### Pros
