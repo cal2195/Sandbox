@@ -65,6 +65,120 @@ commitChanges()
   esac
 }
 
+checkUnionFuse()
+{
+  if command -v unionfs >/dev/null 2>&1; then
+    UNION="unionfs"
+  else
+    if command -v unionfs-fuse >/dev/null 2>&1; then
+      UNION="unionfs-fuse"
+    else
+      NEEDSDEPS=true
+    fi
+  fi
+}
+
+installPits()
+{
+  checkCommand debootstrap
+  sudo debootstrap $PITDIST $SANDBOXROOT/$PITDEST/$SANDPIT
+  sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER
+  sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER sudo
+  sudo cp /etc/resolv.conf $SANDBOXROOT/$PITDEST/$SANDPIT/etc/resolv.conf
+  sudo cp /etc/hosts $SANDBOXROOT/$PITDEST/$SANDPIT/etc/hosts
+}
+
+configurePits()
+{
+  if [ "$INSTALLPIT" == true ] && [ "$PITFILE" != "base" ]; then
+    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get install -y software-properties-common
+    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
+    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get update
+    checkCommand curl
+    curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$PITFILE.pit" | PITDEST=$SANDBOXROOT/$PITDEST/$SANDPIT PITDIST=$PITDIST /bin/bash
+  fi
+}
+
+setupSandboxFolders()
+{
+  if [ "$NAME" == "" ]; then
+    if [ "$RAMDISK" == true ]; then
+      tmprw="$MNTDIR/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rw"
+      tmprt="$MNTDIR/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rt"
+      NAME="rambox"
+    else
+      tmprw="/tmp/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rw"
+      tmprt="/tmp/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rt"
+      NAME="tmpbox"
+    fi
+    mkdir -p $tmprw
+    mkdir -p $tmprt
+  else
+    mkdir -p $MNTDIR/$NAME/rw
+    mkdir -p $MNTDIR/$NAME/rt
+    tmprw="$MNTDIR/$NAME/rw"
+    tmprt="$MNTDIR/$NAME/rt"
+  fi
+}
+
+mountSandbox()
+{
+  #Mount unionfs
+  sudo $UNION -o allow_other,default_permissions,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:$SYSROOT=ro $tmprt
+  #Mount system folders
+  sudo mount -t proc proc $tmprt/proc
+  sudo mount -t sysfs sys $tmprt/sys
+  sudo mount --rbind /dev $tmprt/dev
+  sudo mount --rbind /run $tmprt/run
+  #sudo mount --rbind /var/run/dbus $tmprt/var/run/dbus
+}
+
+configureSandbox()
+{
+  #Change PS1 prompt & set DISPLAY
+  PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
+  sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
+  sudo grep -q -F "PS1=$PSSAND" $tmprt/etc/environment || echo "PS1=$PSSAND" | sudo tee --append $tmprt/etc/environment > /dev/null
+  sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
+  sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
+}
+
+installSandgrains()
+{
+  if [ "$GRAINS" != "" ]; then
+    if [[ $(( $(date +%s) - $(stat -c %Z $tmprt/var/cache/apt/pkgcache.bin) )) -gt $(( 24 * 60 * 60 )) ]]; then
+      sudo chroot $tmprt apt-get update
+    fi
+    sudo chroot $tmprt apt-get install -y curl
+    for grain in $(echo $GRAINS | sed "s/,/ /g")
+    do
+      #Install each grain
+      sudo chroot $tmprt curl -sL "https://github.com/cal2195/Sandbox/raw/master/sandgrains/$grain.grain" | sudo chroot $tmprt /bin/bash
+    done
+  fi
+}
+
+startXSession()
+{
+  sudo chroot $tmprt rm -r /tmp/.X11-unix/*
+  sudo chroot $tmprt su - $USER -c "sudo rm .Xauthority*"
+  if [[ "$(tty)" == *"tty"* ]]; then
+    sudo chroot $tmprt su - $USER -c "startx -- :2"
+  else
+    if command -v Xephyr >/dev/null 2>&1; then
+      if [ "$USINGPIT" == true ]; then
+        $XEPHYR &
+        sudo chroot $tmprt su - $USER -c "./start.sh"
+      else
+        xhost +
+        sudo chroot $tmprt su - $USER -c "DISPLAY=$DISPLAY startx -- /usr/bin/$XEPHYR"
+      fi
+    else
+      echo "-x requires Xephyr installed, unless sandbox is run in a tty! try 'sudo apt-get install xserver-xephyr'"
+    fi
+  fi
+}
+
 #Default values
 REMOVEAFTER=true
 PERMANENT=false
@@ -90,15 +204,7 @@ PITDEST=".pits"
 XEPHYR="Xephyr -ac -resizeable :1"
 
 #Check for unionfs-fuse
-if command -v unionfs >/dev/null 2>&1; then
-  UNION="unionfs"
-else
-  if command -v unionfs-fuse >/dev/null 2>&1; then
-    UNION="unionfs-fuse"
-  else
-    NEEDSDEPS=true
-  fi
-fi
+checkUnionFuse
 
 #Parse commands
 while getopts ":n:hdlpmg:xor:i:v:s:fce" opt; do
@@ -185,12 +291,7 @@ fi
 #Check if using pits
 if [ "$USINGPIT" == true ]; then
   if [ "$INSTALLPIT" == true ]; then
-    checkCommand debootstrap
-    sudo debootstrap $PITDIST $SANDBOXROOT/$PITDEST/$SANDPIT
-    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER
-    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT adduser $USER sudo
-    sudo cp /etc/resolv.conf $SANDBOXROOT/$PITDEST/$SANDPIT/etc/resolv.conf
-    sudo cp /etc/hosts $SANDBOXROOT/$PITDEST/$SANDPIT/etc/hosts
+    installPits
   elif [ ! -d $SANDBOXROOT/$PITDEST/$SANDPIT ]; then
     echo "No sandpit named $NAME exist! Try using -i to install one!"
     exit
@@ -254,84 +355,31 @@ elif [ "$1" == "update" ]; then
   exit
 else
   #Determine sandbox type
-  if [ "$NAME" == "" ]; then
-    if [ "$RAMDISK" == true ]; then
-      tmprw="$MNTDIR/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rw"
-      tmprt="$MNTDIR/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rt"
-      NAME="rambox"
-    else
-      tmprw="/tmp/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rw"
-      tmprt="/tmp/$(cat /dev/urandom | tr -cd 'a-z0-9' | head -c 8)/rt"
-      NAME="tmpbox"
-    fi
-    mkdir -p $tmprw
-    mkdir -p $tmprt
-  else
-    mkdir -p $MNTDIR/$NAME/rw
-    mkdir -p $MNTDIR/$NAME/rt
-    tmprw="$MNTDIR/$NAME/rw"
-    tmprt="$MNTDIR/$NAME/rt"
-  fi
+  setupSandboxFolders
+
   if [ "$COMMITCHANGES" == true ]; then
     commitChanges
   fi
+
   if [ "$ENCRYPT" == true ]; then
     checkCommand encfs
     mkdir -p $tmprw.e
     sudo encfs $tmprw.e $tmprw
   fi
-  #Mount unionfs
-  sudo $UNION -o allow_other,default_permissions,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:$SYSROOT=ro $tmprt
-  #Mount system folders
-  sudo mount -t proc proc $tmprt/proc
-  sudo mount -t sysfs sys $tmprt/sys
-  sudo mount --rbind /dev $tmprt/dev
-  sudo mount --rbind /run $tmprt/run
-  #sudo mount --rbind /var/run/dbus $tmprt/var/run/dbus
-  #Change PS1 prompt & set DISPLAY
-  PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
-  sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
-  sudo grep -q -F "PS1=$PSSAND" $tmprt/etc/environment || echo "PS1=$PSSAND" | sudo tee --append $tmprt/etc/environment > /dev/null
-  sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
-  sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
+
+  #Let's get going!
+  mountSandbox
+  configureSandbox
+
   #Initialise with any sand grains
-  if [ "$GRAINS" != "" ]; then
-    if [[ $(( $(date +%s) - $(stat -c %Z $tmprt/var/cache/apt/pkgcache.bin) )) -gt $(( 24 * 60 * 60 )) ]]; then
-      sudo chroot $tmprt apt-get update
-    fi
-    sudo chroot $tmprt apt-get install -y curl
-    for grain in $(echo $GRAINS | sed "s/,/ /g")
-    do
-      #Install each grain
-      sudo chroot $tmprt curl -sL "https://github.com/cal2195/Sandbox/raw/master/sandgrains/$grain.grain" | sudo chroot $tmprt /bin/bash
-    done
-  fi
-  if [ "$INSTALLPIT" == true ] && [ "$PITFILE" != "base" ]; then
-    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get install -y software-properties-common
-    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
-    sudo chroot $SANDBOXROOT/$PITDEST/$SANDPIT apt-get update
-    checkCommand curl
-    curl -sL "https://github.com/cal2195/Sandbox/raw/sandpit/sandpits/$PITFILE.pit" | PITDEST=$SANDBOXROOT/$PITDEST/$SANDPIT PITDIST=$PITDIST /bin/bash
-  fi
+  installSandgrains
+
+  #Setup any sandpits
+  configurePits
+
   #Check if xsession
   if [ "$XSESSION" == true ]; then
-    sudo chroot $tmprt rm -r /tmp/.X11-unix/*
-    sudo chroot $tmprt su - $USER -c "sudo rm .Xauthority*"
-    if [[ "$(tty)" == *"tty"* ]]; then
-      sudo chroot $tmprt su - $USER -c "startx -- :2"
-    else
-      if command -v Xephyr >/dev/null 2>&1; then
-        if [ "$USINGPIT" == true ]; then
-          $XEPHYR &
-          sudo chroot $tmprt su - $USER -c "./start.sh"
-        else
-          xhost +
-          sudo chroot $tmprt su - $USER -c "DISPLAY=$DISPLAY startx -- /usr/bin/$XEPHYR"
-        fi
-      else
-        echo "-x requires Xephyr installed, unless sandbox is run in a tty! try 'sudo apt-get install xserver-xephyr'"
-      fi
-    fi
+    startXSession
   else
     #And we're away! :D
     if [ "$#" -eq  "0" ]; then
