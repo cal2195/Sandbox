@@ -2,7 +2,7 @@
 
 usage()
 {
-  echo "Usage: $0 [OPTIONS]... [COMMAND]"
+  echo "Usage: $0 [OPTIONS]... [COMMAND [ARGS]]"
   echo ""
   echo "Sandboxes"
   echo "    -n NAME     name the sandbox"
@@ -123,8 +123,14 @@ setupSandboxFolders()
 
 mountSandbox()
 {
+  TOCHAIN=""
+  for join in $(echo $CHAIN | sed "s/,/ /g")
+  do
+    #Link each chain
+    TOCHAIN=":$MNTDIR/$join/rw=ro$TOCHAIN"
+  done
   #Mount unionfs
-  sudo $UNION -o allow_other,default_permissions,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw:$SYSROOT=ro $tmprt
+  sudo $UNION -o allow_other,default_permissions,cow,max_files=32000,use_ino,suid,dev,nonempty $tmprw=rw$TOCHAIN:$SYSROOT=ro $tmprt
   #Mount system folders
   sudo mount -t proc proc $tmprt/proc
   sudo mount -t sysfs sys $tmprt/sys
@@ -195,6 +201,7 @@ SYSROOT="/"
 COMMITCHANGES=false
 ENCRYPT=false
 SCREEN=false
+CHAIN=""
 #Default Debootstrap
 USINGPIT=false
 INSTALLPIT=false
@@ -208,7 +215,7 @@ XEPHYR="Xephyr -ac -resizeable :1"
 checkUnionFuse
 
 #Parse commands
-while getopts ":n:hdlpmg:xor:i:v:s:fcCe" opt; do
+while getopts ":n:hdlpmg:xor:i:v:s:fcCej:" opt; do
   case $opt in
     n)
       NAME=$OPTARG
@@ -274,6 +281,9 @@ while getopts ":n:hdlpmg:xor:i:v:s:fcCe" opt; do
     c)
 	  #Continuous
 	  SCREEN=true
+	  ;;
+	j)
+	  CHAIN=$OPTARG
 	  ;;
     \?)
       echo "Invalid flag: -$OPTARG" >&2
