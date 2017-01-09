@@ -10,6 +10,8 @@ usage()
   echo "    -m          in-memory sandbox"
   echo "    -d          delete the named sandbox"
   echo "    -l          list all sandboxes"
+  echo "    -c          continuous sandbox"
+  echo "    -j          comma separated sandboxes to chain together"
   echo ""
   echo "Sandgrains"
   echo "    -g GRAIN    comma separated grains, or 'list' to see all"
@@ -148,10 +150,13 @@ configureSandbox()
   #Change PS1 prompt & set DISPLAY
   #PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
   PSSAND="\"($NAME)\""
+  #Bash
   sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/etc/environment || echo "PS1=$PSSAND" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
+  #ZSH
+  sudo grep -q -F "export DISPLAY=${NEWDISPLAY}" $tmprt/etc/zsh/zlogin 2> /dev/null || echo "export DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/etc/zsh/zlogin > /dev/null
   sudo grep -q -F "export RPROMPT=$PSSAND" $tmprt/etc/zsh/zlogin 2> /dev/null || echo "export RPROMPT=$PSSAND" | sudo tee --append $tmprt/etc/zsh/zlogin > /dev/null
 }
 
@@ -288,7 +293,7 @@ while getopts ":n:hdlpmg:xor:i:v:s:fcCej:" opt; do
 	  #Continuous
 	  SCREEN=true
 	  ;;
-	j)
+	  j)
 	  CHAIN=$OPTARG
 	  ;;
     \?)
