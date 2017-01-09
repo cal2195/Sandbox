@@ -37,10 +37,14 @@ checkCommand()
   if command -v $1 >/dev/null 2>&1; then
     return 0
   fi
-  if [[ $(( $(date +%s) - $(stat -c %Z $tmprt/var/cache/apt/pkgcache.bin) )) -gt $(( 24 * 60 * 60 )) ]]; then
-    sudo apt-get update
+  if command -v apt-get >/dev/null 2>&1; then
+    if [[ $(( $(date +%s) - $(stat -c %Z $tmprt/var/cache/apt/pkgcache.bin) )) -gt $(( 24 * 60 * 60 )) ]]; then
+      sudo apt-get update
+    fi
+    sudo apt-get install $1
+  elif command -v pacman >/dev/null 2>&1; then
+    sudo pacman -S $1
   fi
-  sudo apt-get install $1
 }
 
 commitChanges()
@@ -136,11 +140,13 @@ mountSandbox()
 configureSandbox()
 {
   #Change PS1 prompt & set DISPLAY
-  PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
+  #PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
+  PSSAND="\"(sandbox)\""
   sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/etc/environment || echo "PS1=$PSSAND" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
+  sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.zshrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.zshrc > /dev/null
 }
 
 installSandgrains()
@@ -198,7 +204,7 @@ ENCRYPT=false
 USINGPIT=false
 INSTALLPIT=false
 PITFILE="base"
-PITDIST="$(lsb_release -sc)"
+#PITDIST="$(lsb_release -sc)"
 PITDEST=".pits"
 #Commands
 XEPHYR="Xephyr -ac -resizeable :1"
@@ -383,7 +389,7 @@ else
   else
     #And we're away! :D
     if [ "$#" -eq  "0" ]; then
-      sudo chroot $tmprt su - $USER
+      sudo chroot $tmprt su --login $USER
     else
       sudo chroot $tmprt su - $USER -c "$@"
     fi
