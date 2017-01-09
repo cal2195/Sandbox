@@ -147,12 +147,12 @@ configureSandbox()
 {
   #Change PS1 prompt & set DISPLAY
   #PSSAND="\"(sandbox) \[\033[38;5;118m\]\u\[$(tput sgr0)\]\[\033[38;5;124m\]@$NAME\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;6m\][\w]\[$(tput sgr0)\]\[\033[38;5;6m\]>\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\""
-  PSSAND="\"(sandbox)\""
+  PSSAND="\"($NAME)\""
   sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/etc/environment || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/etc/environment || echo "PS1=$PSSAND" | sudo tee --append $tmprt/etc/environment > /dev/null
   sudo grep -q -F "DISPLAY=${NEWDISPLAY}" $tmprt/$HOME/.bashrc || echo "DISPLAY=${NEWDISPLAY}" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
   sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.bashrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.bashrc > /dev/null
-  sudo grep -q -F "PS1=$PSSAND" $tmprt/$HOME/.zshrc || echo "PS1=$PSSAND" | sudo tee --append $tmprt/$HOME/.zshrc > /dev/null
+  sudo grep -q -F "export RPROMPT=$PSSAND" $tmprt/etc/zsh/zlogin 2> /dev/null || echo "export RPROMPT=$PSSAND" | sudo tee --append $tmprt/etc/zsh/zlogin > /dev/null
 }
 
 installSandgrains()
@@ -412,7 +412,7 @@ else
   else
     #And we're away! :D
     if [ "$#" -eq  "0" ]; then
-      sudo chroot $tmprt su --login $USER
+      sudo chroot $tmprt su --login $USER -c "$SHELL -l"
     else
       sudo chroot $tmprt su - $USER -c "$@"
     fi
