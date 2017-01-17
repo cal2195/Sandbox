@@ -138,8 +138,8 @@ mountSandbox()
   #Mount system folders
   sudo mount -t proc proc $tmprt/proc
   sudo mount -t sysfs sys $tmprt/sys
-  sudo mount --make-rprivate --rbind /dev $tmprt/dev
-  sudo mount --make-rprivate --rbind /run $tmprt/run
+  sudo mount --rbind /dev $tmprt/dev
+  sudo mount --rbind /run $tmprt/run
   #sudo mount --rbind /var/run/dbus $tmprt/var/run/dbus
 }
 
@@ -421,7 +421,6 @@ else
     fi
   fi
   #Clean up after exit
-  sudo umount $tmprt
   if [ "$REMOVEAFTER" == true ]; then
     sudo rm -r $tmprw
     echo "Sandbox deleted!"
