@@ -408,16 +408,16 @@ else
   	checkCommand screen
   	#And we're away! :D
     if [ "$#" -eq  "0" ]; then
-      screen -D -R -S sandbox.$NAME sudo chroot $tmprt su - $USER
+      screen -D -R -S sandbox.$NAME sudo chroot $tmprt su --login $USER -c "$SHELL -l"
     else
-      screen -D -R -S sandbox.$NAME sudo chroot $tmprt su - $USER -c "$@"
+      screen -D -R -S sandbox.$NAME sudo chroot $tmprt su --login $USER -c "$@"
     fi
   else
     #And we're away! :D
     if [ "$#" -eq  "0" ]; then
       sudo chroot $tmprt su --login $USER -c "$SHELL -l"
     else
-      sudo chroot $tmprt su - $USER -c "$@"
+      sudo chroot $tmprt su --login $USER -c "$@"
     fi
   fi
   #Clean up after exit
